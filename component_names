@@ -1,0 +1,3 @@
+#!/bin/bash
+
+find ${IM_SRC}/sdk/com/ -type f -name "*java" | xargs -L 1 dirname | uniq | sort | grep -viP  "(\.|\d+$)"

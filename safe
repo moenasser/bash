@@ -1,0 +1,59 @@
+#!/bin/bash
+
+#
+# Safe will run your command as is and if command doesn't exit successfully
+#   (return status of 0=success) then it barfs with error messages and
+#   exits the current subshell.  
+# 
+# Use barf when you have many steps in your script to run and want a hard 
+#   stop in case any of them failed along the way.
+#
+
+
+source ~/sdk/bin/colors  ## bring in some colors
+
+
+_safe_log(){
+	## Prepends green colored "safe" in front of input
+	echo -n `green safe`
+	echo -n  ":"
+	echo $@
+}
+_clr_cmd(){
+	### colors our command nams nicel
+	green "$@"
+}
+## prints out nice happy fail message to stderr
+barf() {
+	_safe_log  "`red 'COMMAND FAILED >'` `_clr_cmd $@`"  >&2
+	_safe_log  `red 'EXITING NOW!!'`  >&2
+	exit 111;  ## fail
+}
+
+## Runs the command we're given and fails if it does not return properly
+safe (){
+	local v=0
+	local cmd="'$@'"
+
+	## Check for verbose flag - print more stuff
+	if [ $# -ge 1 -a  $1 = "-v" ];then
+		shift;  ### eat the -v, leave the rest
+		cmd=`_clr_cmd "'$@'"`
+		_safe_log `bold 'Running >'` "$cmd"
+		v=1
+	fi
+
+	if [ "$v" -eq 1 ];then
+		local format=`yellow "Took %Es"`
+		format=` _safe_log "$format to run command $cmd" `
+		/usr/bin/time -f "$format"   $@   || barf  "$cmd" 
+	else
+		$@ || barf "$cmd"
+	fi
+}
+
+
+
+### use it!
+export -f safe
+

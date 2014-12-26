@@ -1,0 +1,61 @@
+#!/bin/bash
+
+source colors
+
+usage(){
+  piv=$(bold `basename $0`);
+  cat <<EOF
+  $piv  [-d delim] [-r] |  [-h]  
+
+  Given lines of stdin, prints them as 1 line separated by `bold delim`.
+  When reversed, `bold -r`, will take one long line and split it into 
+  several lines using `bold delim` as separator.
+
+  `bold -d`	Delimiter. `bold Default` ':'
+  `bold -r`	Reverse pivot. Split on `bold delim`
+  `bold -h`	Print help screen & exit
+
+
+  Example : 
+	$> ls -1 ~sdk/bin | $piv -d ':'
+
+  Or :
+	$> sdk_classpath | $piv -d ':' -r
+
+EOF
+}
+
+delim=':'
+rvrs=0
+while getopts "hd:r" opt
+do
+	case $opt in
+		h ) usage; exit 0;;
+		d ) delim=$OPTARG;;
+		r ) rvrs=1;;
+	esac
+done
+shift $(($OPTIND -1))
+
+
+if [ "$rvrs" -eq 1 ];
+then
+	while read line;
+	do
+		echo $line
+	done  |  sed "s/$delim/\n/g"
+
+else
+	while read line;
+	do
+		echo $line
+	done  | xargs | sed "s/ /$delim/g"
+fi
+
+
+
+## chomp off last delim...
+#p=${p%${delim}$}
+
+
+

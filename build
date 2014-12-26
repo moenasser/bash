@@ -1,0 +1,140 @@
+#!/bin/bash
+
+source colors  ### mmm colors
+
+usage() {
+  name=$(bold `basename $0`)
+  cat <<EOF
+
+  $name  [-h]  |  [-c component] [-j jarname] [-d directory to place jar file]
+
+  Builds and JARs a WF component.
+
+  `bold -h`	Print this screen and exit.
+  `bold -c`	Component dir to build. 	`bold DEFAULT` : assumes current directory
+  `bold -j`	Name of jarfile to output. 	`bold DEFAULT` : uses current dirname
+  `bold -d`	Where to place the jarfile when done. `bold DEFAULT` : '${IM_SRC}/sdk/'
+
+
+
+  Example 1 : 
+	$> (  cd tradeware/  && $name )
+
+
+  Example 2 : 
+	$> $name -c tradeware -j tradeware_2013_01_01.jar  -d /tmp/
+
+
+EOF
+}
+
+
+WACH_DIR="com/imarkets/custom/wachovia"
+ROOT_DIR="${IM_SRC}/sdk/${WACH_DIR}"
+COMP_DIR=''
+JAR_NAME=''
+DIR_OUT="${IM_SRC}/sdk"
+
+while getopts "c:j:d:h" opt
+do
+  case $opt in 
+	h ) usage; exit 0;;
+	c ) COMP_DIR=$OPTARG;;
+	j ) JAR_NAME=$OPTARG;;
+	d ) DIR_OUT=$OPTARG;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+
+### Check the component actually exists relative to us
+if [ "$COMP_DIR" != '' ];then
+	if [ ! -d "${ROOT_DIR}/${COMP_DIR}" ];then
+		echo -e "${ROOT_DIR}/$COM_DIR not found. Can\'t build\!"
+		exit 101;
+	fi
+	COMP_DIR=${ROOT_DIR}/${COMP_DIR}
+else
+	COMP_DIR=`pwd`
+fi
+
+
+## Check the jar name 
+if [ "$JAR_NAME" = '' ];then
+	JAR_NAME="`basename $COMP_DIR`.jar"
+fi
+
+### Figure out final resting place
+if [ "$DIR_OUT" != '' ];then 
+	if [ ! -d "$DIR_OUT" ];then
+		echo -e "$DIR_OUT is not a directory! Can\'t build\!"
+		exit 102;
+	fi
+else
+	DIR_OUT=${IM_SRC}/sdk/
+fi
+
+
+
+echo
+echo Building from : $COMP_DIR
+echo Will place in : $DIR_OUT/$JAR_NAME
+echo
+
+
+
+## build it !!!
+( 
+  cd  $COMP_DIR  
+  
+  ## Remove old *.class files as a removed/renamed class would still have its class file sitting there!
+  rm  *.class && echo "Removed old .class files in $COMP_DIR"
+  
+  ## Remove the older version of the jar file as it would be included in javac's classpath!
+  [[ -f ${IM_SRC}/sdk/$JAR_NAME ]] && rm ${IM_SRC}/sdk/$JAR_NAME && echo "Removed old .jar file : $JAR_NAME"    
+  
+  ## javac -deprecation -classpath "`sdk_classpath`" *.java;
+  javac -classpath "`sdk_classpath`" *.java;
+)
+
+if [ $? -ne 0 ];then
+	echo   'Failed to build!'     ### aww ... fail
+	exit 103;
+fi
+
+
+
+
+## CURDIR=`pwd`
+tmpJar="`basename ${COMP_DIR}`.jar_temp"
+## Jar it up as per command line 
+(
+  ##cd $DIR_OUT;
+  cd ${IM_SRC}/sdk
+
+  
+  ## Create file list for JAR to accept. 
+  ## Uses Jar's built in "@filelist" notation to jar up exact files desired
+
+ 
+  ## get a temporary file...and append filenames we want (everythign except SVN)
+  filesToJar=`mktemp -p ${HOME} .tmp.homeRe.XXXX`
+  (
+    cd ${IM_SRC}/sdk/ ;  ## start from com/imarkets/... b/c that's where the classpaths will start
+    find ${WACH_DIR}/`basename ${COMP_DIR}` -type f | grep -viP "svn" > $filesToJar
+  )
+  
+  # echo Temp Jar file name = $tmpJar 
+  # echo Files to Jar ...
+  # cat $filesToJar
+
+  ## Now Jar up just the files we want
+  jar -cvf ~/sdk/$tmpJar  @$filesToJar
+
+  rm $filesToJar   ## clean up
+);
+
+
+## Move into final resting place
+mv ~/sdk/$tmpJar ${DIR_OUT}/$JAR_NAME
+

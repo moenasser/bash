@@ -1,0 +1,73 @@
+#!/bin/bash
+
+source colors
+source safe
+
+local=`echo ${IM_SRC}/im/config/LOCALCONFIG`
+
+key=
+val=
+case "$#" in
+    2 ) 
+        key=$1
+        val=$2
+        ;;
+    1 )
+        key=$1
+        grep -viP '^#' ${local}  | grep -i  ^${key}  --color
+        exit 0
+        ;;
+    * )
+        echo 'Error : Need 2 inputs - Alta configuration and its value' 
+        exit 1 
+        ;;
+esac
+
+## if the value has a '/' in it, will break out sed command. Escape the slashes
+escapeSlash(){
+	echo $@ | sed 's/\//\\\//g'
+}
+
+## get existing value
+current=`grep -viP '^#' ${local}  | grep -i  ^${key}= `  
+echo `red Before:` $current
+
+## Save copy of previous file
+cp $local ${local}.`date +%Y%m%d-%H:%M:%S`
+
+## Check if overwrite or new value
+cnt=`echo $current | grep -vP '^$' | wc -l`
+if [ "$cnt" -eq 0 ];then
+	
+	## Not present before so append...
+	echo "$key=$val" >> $local
+	
+else
+	
+	## make temp file to make our change
+	tmpFile=`mktemp`
+
+	if [ "$current"  =  "$key=$val" ];then
+		echo `white After :` `grep ^$key= $local`
+		yellow '(No change. Did not alter the file.)'
+		exit 0
+	fi
+
+	## Escape new/old values that have slash in them
+	esVal=`escapeSlash $val`
+	esCur=`escapeSlash $current`
+	
+	## Overwrite...
+	## cat  $local | sed "s/^${current}$/$key=$val/g" > $tmpFile
+	safe sed "s/^${esCur}$/$key=${esVal}/g"  $local  >  $tmpFile
+	
+	## swap
+	cat $tmpFile  >  $local
+	
+	## clean up
+	rm -r $tmpFile
+fi
+
+
+echo `white After :` `grep ^$key= $local` 
+

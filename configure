@@ -1,0 +1,121 @@
+#!/bin/bash 
+
+restart=no;
+
+usage(){
+		echo "Usage `basename $0` [-r] [service] [on|off]"
+		echo "      `basename $0` [-r] [on|off]  [service1 service2 service3 ... ]"
+}
+
+while true; do
+  case $1 in
+    -h) shift; usage; exit 0;;
+    -r) shift; restart=yes;;
+     *) break;
+  esac;
+done;
+
+## -- Removes and adjusts symlinks
+configureOnOff(){
+	local SVC=$1;  
+	local  ON=$2;
+
+  for i in `find $HOME/im/config/template -name \*-$SVC$ON\*`; do
+    base=`basename $i | cut -f 1 -d -`;
+    [[ -f `dirname $i`/$base ]] && rm -v `dirname $i`/$base;
+    ln -s `basename $i` `dirname $i`/$base;
+  done;
+}
+
+rebuildConfig(){
+  /usr/bin/perl ${HOME}/im/bin/rebuild_config
+}
+
+## Restarts the given service name (vecna, ecn or reporter).
+restartModule(){
+	local SVC=$1
+	local $restart=$2
+  if [ $restart = 'yes' ]; then ## TODO: remove this check
+    echo Restarting $SVC ...
+    case $SVC in
+      reuters|vecna)
+               run_service stop vecna;    run_service start vecna   ;;
+      ecn)     run_service stop ecn;      run_service start ecn     ;;
+      *)       run_service stop reporter; run_service start reporter;;
+    esac;
+  fi;		
+}
+
+## --- configures several at once
+multiConfigure(){
+	local restart=$1
+	local ON=$2
+	shift; shift;
+	
+	# loop over the remainders
+	for SVC in $@;do
+		echo Turning $ON $SVC
+		configureOnOff $SVC $ON		
+	done
+	
+	echo Rebuilding configs ...
+	rebuildConfig
+	
+	if [ "$restart" == "yes" ];then
+		echo Restarting services ...
+		# Look for reporter and leave him last
+		restartReporter=0
+		for SVC in $@;do
+			case $SVC in
+				reuters|vecna|ecn)
+					restartModule $SVC $restart
+					;;
+				* )
+					restartReporter=1
+					;;
+			esac
+		done
+		if [ "$restartReporter" -eq 1 ];then
+			restartModule reporter $restart
+		fi
+	fi
+}
+
+
+
+
+if [ $# = 0 ]; then
+
+  for i in `find $HOME/im/config/template -type l`; do
+    echo `ls -l $i | cut -f 3 -d -`; 
+  done | sort -u;
+
+elif [ $# = 1 ]; then
+  SVC=$1;
+  
+  for i in `find $HOME/im/config/template -type l`; do
+    echo `ls -l $i | grep ${SVC}o | cut -f 3 -d -`; 
+  done | sort -u;
+  
+elif [[ $# -eq 2  &&  "$2" =~ ^(on|off)$ ]]; then
+	SVC=$1;
+	ON=$2;
+	
+	configureOnOff  $SVC $ON
+	rebuildConfig 
+	restartModule $SVC $restart
+	
+else
+	## new format ....
+	if [[ "$1" =~ ^(on|off)$ ]];then
+	
+		ON=$1 ;  shift;
+		multiConfigure $restart $ON $@
+		
+	else
+		echo Error : Bad input
+		usage;
+		exit 1;
+	fi
+fi
+

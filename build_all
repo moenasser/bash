@@ -1,0 +1,16 @@
+#!/bin/sh
+
+#for i in `find ${HOME}/sdk/ -name '*.java' -exec dirname {} \; | sort -u`; do
+#  echo Building in $i;
+#  (cd $i; build);
+#done
+
+source ${HOME}/sdk/bin/safe 
+
+for i in `component_names`;do
+  ## ( cd $i;  build );
+
+  safe build -c `basename $i`
+
+done
+

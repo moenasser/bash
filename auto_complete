@@ -1,0 +1,324 @@
+#!/bin/bash
+
+#
+# Here is where we define auto-completion functions for some of our
+# commonly repeating patterns of use of Alta commands
+#
+
+## Enable expaned shell globbing
+shopt  -s  extglob
+
+## Save the component names for common re-use
+_acvar_component_names=$(  ~/sdk/bin/component_names | awk -F '/' '{print $NF}' | xargs )
+
+#
+# prep_release's auto completion.  Adds all the component names on the command line
+#
+_ac_prep_release() 
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+
+    #
+    #  Complete the arguments to some of the basic commands.
+    #
+
+    COMPREPLY=( $(compgen -W "${_acvar_component_names}" --  "${cur}" ) )
+
+    return 0
+
+}
+
+complete -F  _ac_prep_release  prep-release
+
+
+#
+# build scripts auto-complete when used with arguments
+#
+_ac_build()
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+    local opts="-h -c -j -d"  ## command line optiosn to autocomplete when nothing else is typed
+
+    #
+    #  Completion for some of the above commands
+    #  (We check if we are preceded by "-c" and auto complete from there
+    #
+
+    case "$prev"  in 
+	"-c" )
+		COMPREPLY=( $(compgen -W "${_acvar_component_names}" --  "${cur}" ) )
+		return 0
+		;;
+	"-d" )
+		COMPREPLY=( $(compgen -o filenames -A file -A directory -o dirnames "${cur}" ) )
+		return 0
+		;;
+	* )
+		## TODO : return nothing for other variables?
+		return 0
+		;;
+    esac 
+
+    # 
+    # If we didn't get an option starting with '-' then print out the options available
+    COMPREPLY=( $(compgen  -W  "${opts}" -- "" ) )
+    return 0
+}
+
+complete -F  _ac_build  build
+
+
+#_ac_configure()
+#{
+#    local cur="${COMP_WORDS[COMP_CWORD]}"
+#    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+#    local opts="on off"
+#
+#
+#    COMPREPLY=( $(compgen -W "$opts"  --  "$cur" ) )
+#    return 0
+#}
+#
+
+# Add the on/off configurable modules to configure command
+#
+#_acvar_configure_list=`find ~/im/config/template/ -type l -name "*.conf" | xargs -L 1 basename | sed 's/.conf$//g' | xargs`
+_acvar_configure_list='ecn tradeware deskrouter rmds vov trace raccoon tortola brassact engardcdb client'
+_ac_configure() 
+{
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  
+  COMPREPLY=( $(compgen -W "${_acvar_configure_list}" --  "$cur" ) )
+  return 0
+}
+
+complete -F  _ac_configure configure
+
+
+
+#
+# Add names of commands to catwhich's auto-comp
+#
+complete -A  command  catwhich
+
+
+
+
+
+__acfun_altaconf_parts(){
+    cut -f 1 -d '=' $1 | grep -vP '^#' | cut -f 1-"$2" -d '_' | sort -u | grep "$3" | xargs
+}
+__acfun_altaconf_tr(){
+    echo $1 | tr [:lower:] [:upper:] | sed 's/\./\_/g'
+}
+_ac_altaconf()
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    local conf=`echo ~/im/config/alta.conf`
+    local parts=''
+    
+    cur=` __acfun_altaconf_tr $cur `;
+    case "$cur" in 
+	'' )
+		parts=` __acfun_altaconf_parts ${conf} 1 `
+		;;
+	* )
+		local num_parts=` echo "$cur" | ~/sdk/bin/pivot -r -d '_' | grep -vP '^$' | wc -l`;
+		num_parts=$(( num_parts + 1 ))
+		## local more_parts=$(( num_parts + 1 )) ## perhaps we can show even more?
+		
+		## Attempt to grab more parts to give user greater visibility....
+		parts=`__acfun_altaconf_parts ${conf} ${num_parts} ${cur}`;
+		N=`echo $parts | awk '{print NF}' `
+
+		# if [ "$N" -ge 100 ];then
+		# 	## but not if it's going to show more than 100 which would bloat and require prompts
+		# 	parts=` __acfun_altaconf_parts ${conf} ${num_parts} `
+		# fi
+
+		## if very few values returned ... show the whole thing 
+		if [ "$N" -le 10 ];then
+			# source ~/sdk/bin/colors
+			# cyan N = $N ... getting again ... 
+			parts=` __acfun_altaconf_parts $conf "" `
+		fi
+		;;
+    esac 
+
+    COMPREPLY=( $(compgen -W "${parts}"  --  "$cur" ) )
+    return 0
+}
+
+complete -F  _ac_altaconf altaconf
+
+
+
+
+
+__acfun_altaconfset_parts(){
+    cut -f 1 -d '=' $1 | grep -vP '^#' | cut -f 1-"$2" -d '.' | sort -u | cut -f 1-"$2" -d '_' | sort -u |grep "$3" | xargs
+}
+__acfun_altaconfset_dotOrUnderScore(){
+    hasDot=`echo "$1" | grep -v '\.' | wc -l`
+    if [ "$hasDot" -eq 0 ];then
+        echo '\.'
+    else
+        echo '\_'
+    fi
+}
+__acfun_altaconfset_valueOf(){
+    grep -i  ^$1=  $2  | cut -f 2 -d '=' | sed 's/"//g'
+}
+_ac_altaconfset()
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    local conf=`echo ~/im/config/LOCALCONFIG`
+    local parts=''
+    
+    
+    case "$prev" in 
+    altaconfset )
+        case "$cur" in
+        '' )
+            parts=` __acfun_altaconfset_parts ${conf} 1 `
+            ;;
+        * )
+            local delim=`__acfun_altaconfset_dotOrUnderScore "$cur"`
+            local num_parts=` echo "$cur" | ~/sdk/bin/pivot -r -d $delim | grep -vP '^$' | wc -l`;
+            if [ ${num_parts} -eq 0 ];then
+                num_parts=$(( num_parts + 1 ))
+            fi
+            num_parts=$(( num_parts + 1 ))
+            local more_parts=$(( num_parts + 1 )) ## perhaps we can show even more?
+            
+            ## Attempt to grab more parts to give user greater visibility....
+            parts=`__acfun_altaconfset_parts ${conf} ${num_parts} ${cur}`;
+            N=`echo $parts | awk '{print NF}' `
+    
+            ## if very few values returned ... show the whole thing 
+            if [ "$N" -le 6 ];then
+                parts=` __acfun_altaconfset_parts $conf "99" $cur `
+            fi
+            ;;
+        esac 
+        ;;
+    * )
+        local prev2="${COMP_WORDS[COMP_CWORD-2]}"
+        case "$prev2" in 
+        altaconfset )
+            ## For added awesomeness auto complete the 2nd arguemnt w/ existing value!
+            parts=`__acfun_altaconfset_valueOf  $prev $conf`
+            ;;
+        * )
+            parts=''
+            ;;
+        esac
+    esac
+    
+    COMPREPLY=( $(compgen -W "${parts}"  --  "$cur" ) )
+    return 0
+}
+
+complete -F  _ac_altaconfset altaconfset
+
+
+
+
+
+_ac_perform_()
+{
+	
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$cur" in
+	'-' )
+		COMPREPLY=(  $(compgen -W "--force" -- "" ) )
+		return 0;
+    esac
+
+    return 0;
+}
+
+## Add "--force" autocomplete to cleanup & maintenance commands
+
+complete -F _ac_perform_  perform_cleanup
+complete -F _ac_perform_  perform_maintenance
+
+
+_ac_run_service()
+{
+    local step="start stop pid pids eod loglevel ping"
+    local stepRe=`echo $step | sed 's/ /|/g' `
+    local srvs="corba ministry secmgr ecn manual vecna stockgem cbgem cbadmin viewmaster goliath david0 reporter pinger altaas"
+
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$prev" in 
+	 @(run_service|rs) )
+		COMPREPLY=( $(compgen -W "${step}" -- "$cur" ) )
+		return 0
+		;;
+	@($stepRe) )
+		COMPREPLY=( $(compgen -W "${srvs}" -- "$cur" ) )
+		return 0
+		;;
+    esac
+    return 0;
+}
+
+complete -F _ac_run_service  run_service
+complete -F _ac_run_service  rs
+
+
+
+## Autocompletion for known FIX reporter sequences values 
+_ac_set_sequence()
+{
+    local sequences="ENGARDCDB DESKROUTER TORTOLA VOV RACCOON BRASSACT TRADEWARE TRACE"
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    case "$prev" in 
+        "-s" )
+        COMPREPLY=( $(compgen -W "${sequences}" -- "$cur" ) )
+        return 0
+        ;;
+    esac
+    return 0;
+}
+
+complete -F _ac_set_sequence set_sequence.sh
+complete -F _ac_set_sequence set-sequence
+complete -F _ac_set_sequence set_sequence
+ 
+ 
+ 
+ 
+
+### Autocomplete for all those API_ADMIN sub-commands 
+__acfun_api_admin_subcommands()
+{
+   ${HOME}/im/bin/api_admin -h | \grep -P '^Tools' -A 50 | \grep -iP '^(?=\s).*\b\w+\b' | awk -F ':' '{print $NF}' | sed 's/,/ /g' | ${HOME}/sdk/bin/pivot -d ' ' 
+}
+__acvar_aa_subcommands=`__acfun_api_admin_subcommands`
+_ac_api_admin()
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    ## we filled the variable __acvar_aa_subcommands w/ the result of acfun_api_admin_subcommands ...
+    ## ... so we dont have to run everytime you hit tab-tab
+    COMPREPLY=( $(compgen -W "${__acvar_aa_subcommands}" -- "$cur" ) )
+    return 0;
+		
+} 
+
+complete -F  _ac_api_admin  api_admin
+complete -F  _ac_api_admin  aa
+
+ 

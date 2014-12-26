@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# Source this file to get bolding, and coloring in your print statments
+#
+
+## TODO : Make these conditional!   tput only works when you have a terminal.
+## tty will check if you are in a terminal or not (like in the scant crontab sh environment)
+## tty (-s for silent) will let us know to use tput or not
+
+#_bold=`tty -s && tput bold || echo ""`  ## markup to make output bold  (nothing if not in terminal)
+#norm=`tty -s && tput sgr0 || echo ""`  ## markup to make output normal (nothing if not in terminal)
+
+#bold() {
+  #  ### bolds just the text you give it
+  #echo "${_bold}$@${norm}"
+#}
+
+
+### Define more colors!
+
+RED=`tty -s && tput setaf 1 || echo ""`
+GREEN=`tty -s && tput setaf 2 || echo ""`
+YELLOW=`tty -s && tput setaf 3 || echo ""`
+BLUE=`tty -s && tput setaf 4 || echo ""`
+PURPLE=`tty -s && tput setaf 5 || echo ""`
+MAGENTA=`tty -s && tput setaf 5 || echo ""`		### eh, looks like purple
+CYAN=`tty -s && tput setaf 6 || echo ""`
+WHITE=`tty -s && tput setaf 7 || echo ""`
+UNDERLINE=`tty -s && tput smul || echo ""`	### omg! underlines!
+BOLD=`tty -s && tput bold || echo ""`
+NORM=`tty -s && tput sgr0 || echo ""`
+
+
+red(){
+  echo -e "${RED}$@${NORM}"
+}
+green(){
+  echo -e "${GREEN}$@${NORM}"
+}
+yellow(){
+  echo -e "${YELLOW}$@${NORM}"
+}
+blue(){
+  echo -e "${BLUE}$@${NORM}"
+}
+purple(){
+  echo -e "${PURPLE}$@${NORM}"
+}
+magenta(){
+  echo -e "${MAGENTA}$@${NORM}"
+}
+cyan(){
+  echo -e "${CYAN}$@${NORM}"
+}
+white(){
+  echo -e "${WHITE}$@${NORM}"
+}
+underline(){
+  echo -e "${UNDERLINE}$@$( tty -s && tput rmul || echo ''  )"
+}
+bold(){
+	echo -e "${BOLD}$@${NORM}"
+}
+
+## ---- PS1 terminal prompt colors ------
+## ---- These variants can be used inside PS1 terminal 
+## ---- prompt w/o messing up the spacing when pressing up-arrow
+## ---- to view history 
+
+ps1_bold(){
+	echo -e "\[$BOLD\]$@\[$NORM\]"
+}
+ps1_red(){
+	echo -e "\[$RED\]$@\[$NORM\]"
+}
+ps1_green(){
+	echo -e "\[$GREEN\]$@\[$NORM\]"
+}
+ps1_yellow(){
+	echo -e "\[$YELLOW\]$@\[$NORM\]"
+}
+ps1_blue(){
+	echo -e "\[$BLUE\]$@\[$NORM\]"
+}
+ps1_purple(){
+	echo -e "\[$PURPLE\]$@\[$NORM\]"
+}
+ps1_magenta(){
+	echo -e "\[$MAGENTA\]$@\[$NORM\]"
+}
+ps1_cyan(){
+	echo -e "\[$CYAN\]$@\[$NORM\]"
+}
+ps1_white(){
+	echo -e "\[$WHITE\]$@\[$NORM\]"
+}
+ps1_underline(){
+	echo -e "\[$UNDERLINE\]$@\[$NORM\]"
+}

@@ -1,0 +1,84 @@
+alias ls='ls -F'
+alias lsl='ls -lrt'
+alias lsld='lsl -d'
+alias lss='ls -lSr'
+alias grep='grep --color'
+alias e=emacs
+alias h=history
+alias kll="rm *~ .*~ '#'*'#'"
+alias klc='rm core'
+alias kld='rm dead.letter'
+alias cad='cat dead.letter'
+alias psf='ps -fu $USER'
+alias pst='pstat -s'
+alias mem='dmesg | grep mem'
+alias setnone='export DISPLAY='
+alias setvt100='export TERM=vt100'
+alias setdisp="export DISPLAY=localhost:13.0"
+#alias settao="export DISPLAY=111.1.13.118:0"
+alias settao="export DISPLAY=111.4.27.159:0"
+alias setkev="export DISPLAY=111.1.13.68:0"
+alias setavi="export DISPLAY=111.4.28.168:0"
+alias set375="export DISPLAY=111.4.29.158:0"
+alias set375a="export DISPLAY=111.4.27.159:0"
+alias set375b="export DISPLAY=111.4.27.28:0"
+alias set375c="export DISPLAY=111.4.32.251:0"
+alias set375d="export DISPLAY=111.4.28.229:0"
+
+
+alias dat="date '+DATE: %m/%d/%y %a     TIME: %H:%M:%S'"
+alias rs=run_service
+alias rsstart="rs start all"
+alias rsstop="rs stop all"
+alias rsr="rs stop reporter; rs start reporter"
+alias rse="rs stop ecn; rs start ecn"
+alias rsv="rs stop vecna; rs start vecna"
+alias rsd="rs stop david0; rs start david0"
+alias rsa='rs stop altaas; rs start altaas'
+alias rb=rebuild_config
+alias aa=api_admin
+alias pm=perform_maintenance
+alias pc=perform_cleanup
+alias err="egrep 'ERROR:|FATAL:|ALERT:|OutOfMemory|Unexpected Exception|NullPointerException'              ./*.log | grep -v OnOutOfMemoryError="
+alias er2="egrep 'ERROR:|FATAL:|ALERT:|OutOfMemory|Unexpected Exception|NullPointerException|New Instance' ./*.log | grep -v OnOutOfMemoryError="
+alias init="egrep 'finished initializing|preloading order history records done|New Instance' ${HOME}/im/logs/david0.log"
+alias cu="cvs update"
+alias cnq="cvs -nq update"
+alias cc="cvs commit -m"
+
+if [ ! -e /bin/vim ]
+then alias vim=vi
+fi
+
+#alias /='cd `pwd -P`'
+alias ~="cd ~"
+alias nano='nano -w' ### nano/pico will split long lines when editing them
+alias PS='ps -efw | grep ${USER}'
+alias psg='ps f -efw | grep -e $USER\\\|root | cut -c10-15,52- | less +G -S'
+alias psgw='ps f -efw | grep -e $USER\\\|root | cut -c10-15,52- | less +G'
+alias rgrep='grep -r'
+
+alias rss='run_service start'
+alias rsk='run_service stop'
+alias rsp='run_service pids all'
+
+alias gcar='egrep "New Instance|CAR:" reporter.log | grep -v Sent'
+alias gtor='egrep "New Instance|TOR:" reporter.log | grep -v Sent'
+alias gtrc='egrep "New Instance|TRC:" reporter.log | grep -v Sent'
+alias grac='egrep "New Instance|RAC:" reporter.log | grep -v Sent'
+alias gcar1='gcar | egrep "New Instance|eventType=|orderReceivingFirmOrderID>:|routedOrderID>:|sec=|orderCreationReason=|replacedFirmOrderID>:|orderEventTypeCode>:|modificationCancellationFlag>:"'
+alias gcar2='gcar | egrep "New Instance|eventType=|orderReceivingFirmOrderID>:|routedOrderID>:|sec=|orderCreationReason=|replacedFirmOrderID>:|orderEventTypeCode>:"'
+alias geng='egrep "New Instance|CDB:|FIX EXEC|FIX WCHV" reporter.log'
+alias gact='egrep "New Instance|BRASSACT:|FIX EXEC|FIX BRAS" reporter.log'
+alias gtw='egrep -i "tw fix|twfid|altatw" reporter.log'
+alias gvov='egrep "New Instance|VOV:" reporter.log | grep -v Sent'
+alias gvovfix='egrep "ALTA01:|Sent|Received" reporter.log'
+
+alias twentry="im_java -LL INFO com.imarkets.custom.wachovia.tradeware.ElectronicOrderTester"
+alias dltime="egrep 'REQ: x1|found |took ' david0.log | grep mman"
+alias ulgrep="egrep -i 'entities: w=myTradingAccounts|Calling InitializeTicket for ticketType|Barrier Complete' david0.log > david0.uploadmkts"
+
+alias settled='echo "MINISTRY"; tail -3 ministry.log; echo "DAVID0"; tail -3 david0.log; echo "REPORTER"; tail -3 reporter.log; echo "CBGEM"; tail -3 cbgem.log; echo "STOCKGEM"; tail -3 stockgem.log; echo "VIEWMASTER"; tail -3 viewmaster.log; echo "VECNA"; tail -3 vecna.log'
+
+alias w=' cd ~/sdk/com/imarkets/custom/wachovia'
+alias hh='host `hostname`'
