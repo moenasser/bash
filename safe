@@ -10,7 +10,7 @@
 #
 
 
-source ~/sdk/bin/colors  ## bring in some colors
+source colors  ## bring in some colors
 
 
 _safe_log(){
