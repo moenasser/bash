@@ -1,82 +1,27 @@
-. ${HOME}/im/config/bashrc.pso
-source ${HOME}/sdk/bin/colors
+source colors
 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HOME}/sdk/tips/TIPS/:${HOME}/sdk/tips/SscslJNI 
-export LD_LIBRARY_PATH
-
-#JAVA_HOME=/usr/java/j2sdk1.4.2_07
-#JAVA_HOME=/usr/java/jdk1.5.0_15
 JAVA_HOME=~/java/jdk1.6.0_31
 export JAVA_HOME
 
-export SYBASE=/local/sybase125
-SYBASE_BIN=${SYBASE}/OCS-12_5/bin
-
-ADD_PATH=.:${HOME}/sdk/bin:${JAVA_HOME}/bin:${SYBASE_BIN}
+ADD_PATH=${JAVA_HOME}/bin
 PATH=${ADD_PATH}:${PATH}
 export PATH
-#PATH=/home/a384474/Komodo-3.1:$PATH
-#export PATH
-
-#CATALINA_HOME=/home/a384474/ALTA-3-4-4_02RC/lib/tomcat-4.0.4-LE
-#export CATALINA_HOME
-
-if [ ${USER} != "altaprod" ]; then
-CLASSPATH=${HOME}/sdk:${HOME}/im/lib/alta.jar:${HOME}/im/lib/mail.jar:${HOME}/im/lib/jconn2-5.5.jar:${HOME}/im/lib/gnu-regexp-1.0.8.jar:${HOME}/sdk/lib/mqm/lib/com.ibm.mq.jar:${HOME}/sdk/lib/mqm/lib/connector.jar:${HOME}/sdk/lib/reuters/jsfcrt_jdist.jar:${HOME}/sdk/lib/tibjms.jar:${HOME}/sdk/lib/eqderiv.jar:${HOME}/sdk/lib/jms.jar:${HOME}/Reuters/Reuters_Foundation_API_-_Java_Edition_5.1/Libs/rfa.jar:${HOME}/sdk/lib/sql_server/msbase.jar:${HOME}/sdk/lib/sql_server/mssqlserver.jar:${HOME}/sdk/lib/sql_server/msutil.jar;
-export CLASSPATH;
-fi;
-
-# UNCOMMENT THIS NEXT LINE IF perl IS NOT LOCATED AT EXPECTED /usr/local/bin/perl
-# AND SUBSTITUTE CHANGEME WITH FULLY-QUALIFIED PATH TO perl, eg: /usr/bin/perl
-#
-rebuild_config() { /usr/bin/perl ${HOME}/im/bin/rebuild_config; }
 
 
-if [ ${USER} = "altaprod" ]; then
-PRMPT=PROD;
-elif [ ${USER} = "altauat" ]; then
-PRMPT=UAT;
-elif [ ${USER} = "altaqa1" ]; then
-PRMPT=qa;
-elif [ ${USER} = "a384474" ] && [ ${HOSTNAME} = "ncib1altd001" ]; then
-  PRMPT=dev;
-elif [ ${USER} = "x622315" ] && [ ${HOSTNAME} = "ncib1altt001" ]; then
-  PRMPT=dev2;
+if [ ${USER} = "prod" ]; then
+	PRMPT=PROD;
+elif [ ${USER} = "uat" ]; then
+	PRMPT=UAT;
+elif [ ${USER} = "qa" ]; then
+	PRMPT=qa;
+elif [ ${USER} = "moe" ] && [ ${HOSTNAME} = "moeworkstation" ]; then
+	PRMPT=dev;
 else
-  PRMPT=dev3;
+	PRMPT=dev2;
 fi;
 
-# calvin is x622315
-# wanda is a428036 
 
-if [ ${PRMPT} = "PROD" ]; then
-  CVSROOT=${HOME}/cvsroot;
-  export EDITOR=vi
-elif [ ${PRMPT} = "UAT" ]; then
-  CVSROOT=":pserver:altauat@cib-cvs.usa.wachovia.net:2401/fire/repo/1alt";
-  export EDITOR=vi
-elif [ ${PRMPT} = "qa" ]; then
-  CVSROOT=":pserver:x817367@cib-cvs.usa.wachovia.net:2401/fire/repo/1alt";
-  export EDITOR=emacs
-  umask 1;
-elif [ ${PRMPT} = "dev" ]; then
-  CVSROOT=":pserver:x817367@cib-cvs.usa.wachovia.net:2401/fire/repo/1alt";
-  export EDITOR=xemacs
-  umask 1;
-elif [ ${PRMPT} = "dev2" ]; then
-  CVSROOT=":pserver:x817367@cib-cvs.usa.wachovia.net:2401/fire/repo/1alt";
-  export EDITOR=xemacs
-  umask 1;
-else
-  CVSROOT=":pserver:x817367@cib-cvs.usa.wachovia.net:2401/fire/repo/1alt";
-  export EDITOR=xemacs
-  umask 1;
-fi;
-export CVSROOT
-
-export REPLYTO=tao.alter@wachovia.com
 export SHELL=bash
-
 . ${HOME}/.aliases
 
 PS1="${TITLEBAR}
@@ -87,7 +32,7 @@ export TMOUT=0
 
 
 ## Add in auto completion of some of our scripts
-source ~/sdk/bin/auto_complete
+source ${HOME}/auto_complete
 
 
 
@@ -98,15 +43,16 @@ whoAmIReally(){
 }
 ## Detects if mnasser user is the one logged on
 isMNasser(){
-	if [ $USER = "u268577" ];then
+	if [ $USER = "moenasser" ];then
 		echo 1
-	elif [ "`whoAmIReally`" = "u268577" ];then
-		## u268577 logged in and su'ed into an alta user 
+	elif [ "`whoAmIReally`" = "moenasser" ];then
+		## "moenasser" logged in & later su'ed into prod/qa/uat user 
 		echo 1
 	else
 		echo 0
 	fi
 }
+
 ## fake echo. prints for everyone else but mnasser user cuz i know what's up
 _fecho(){
 	if [ `isMNasser` -ne 1 ];then echo $@ ; fi ;
@@ -115,34 +61,31 @@ _fecho(){
 MNasserSettings(){
 	shopt -s extglob  ## turn on extended globbing patterns
 	case "${HOSTNAME}" in 
-		"ncib1altp003"|wppra00a003[23] )
+		*prod*|*prd* )
 			TITLEBAR="[`ps1_yellow 'WARNING!!! You are in PRODUCTION'`] "
-			if [[ $HOSTNAME =~ ^wppra00a002[23]$ ]];then _NAME='NEW-PROD'; else _NAME='PROD';fi
+			if [[ $HOSTNAME =~ ^prd00[123]$ ]];then _NAME='NEW-PROD'; else _NAME='PROD';fi
 			PRMPT=`ps1_bold $( ps1_red ${_NAME} ) `
 			SUSER=`ps1_red $USER`	;;
-		"ncib1altd003"|wupra00a002[34] )
-			if [[ $HOSTNAME =~ ^wupra00a002[34]$ ]];then _NAME='NEW-UAT'; else _NAME='UAT';fi
+		*int*|*integration* )
+			if [[ $HOSTNAME =~ ^int00[123]$ ]];then _NAME='NEW-UAT'; else _NAME='UAT';fi
 			PRMPT=`ps1_bold $( ps1_yellow ${_NAME} )`
 			SUSER=`ps1_yellow $USER`;;
-		#"wupra00a0023" )
-		#	PRMPT=`ps1_bold $( ps1_yellow NEW-UAT )`
-		#	SUSER=`ps1_yellow $USER`;;
-		ncib1altt003 ) 
+		qa* ) 
 			TITLEBAR="[`ps1_yellow You are in QA`] "
 			if [ `whoami` != `whoAmIReally` ];then
-				## Means i have su - into the alta user.
+				## Means i have su - into the QA user.
 				## Make prompt slightly diff
 				TITLEBAR=''
 			fi
 			PRMPT=`ps1_bold $( ps1_green QA )`
 			SUSER=`ps1_green $USER`;;
-		ncib1altt001|wspra00a0015 ) 
+		moe*|*workstation* ) 
 			PRMPT=`ps1_bold $( ps1_cyan DEV )`
 			SUSER=`ps1_cyan $USER`;;
 	esac
 	
 	## If user is in as their self, then make prompt white - no write permissions so no worries
-	## If SU'ed as someone else - ie the alta user - then keep $USER prompt to $PRMPT color 
+	## If SU'ed as someone else - ie the application user - then keep $USER prompt to $PRMPT color 
 	if [ "`whoami`" = "`whoAmIReally`" ];then
 		SUSER=`ps1_white $USER`
 	fi
@@ -160,6 +103,7 @@ ${TITLEBAR}`ps1_green ${SUSER}`@${PRMPT}:\w > "
 	export EDITOR=vi                  && _fecho -e "\t Default editor set to `bold vi`"
 	                                     _fecho `yellow "   ... ]"`
 }
+
 ## Now auto load my settings if its me. 
 ## Anyone else can just call `MNasserSettings` to use them
 if [ `isMNasser` -eq 1 ]; then

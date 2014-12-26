@@ -29,7 +29,7 @@ EOF
 }
 
 
-WACH_DIR="com/imarkets/custom/wachovia"
+WACH_DIR="com/company_name/custom/wachovia"
 ROOT_DIR="${IM_SRC}/sdk/${WACH_DIR}"
 COMP_DIR=''
 JAR_NAME=''

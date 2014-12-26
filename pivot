@@ -17,10 +17,10 @@ usage(){
 
 
   Example : 
-	$> ls -1 ~sdk/bin | $piv -d ':'
+	$> ls -1 ~/sdk/bin | $piv -d ':'
 
   Or :
-	$> sdk_classpath | $piv -d ':' -r
+	$> echo \$PATH | $piv -d ':' -r
 
 EOF
 }

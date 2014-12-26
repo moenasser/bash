@@ -3,8 +3,8 @@
 # Source this file to get bolding, and coloring in your print statments
 #
 
-## TODO : Make these conditional!   tput only works when you have a terminal.
-## tty will check if you are in a terminal or not (like in the scant crontab sh environment)
+## Made these conditional.   `tput` only works when you have a terminal.
+## `tty` will check if you are in a terminal or not (like in the scant crontab sh environment)
 ## tty (-s for silent) will let us know to use tput or not
 
 #_bold=`tty -s && tput bold || echo ""`  ## markup to make output bold  (nothing if not in terminal)
