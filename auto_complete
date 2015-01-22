@@ -2,7 +2,7 @@
 
 #
 # Here is where we define auto-completion functions for some of our
-# commonly repeating patterns of use of Alta commands
+# commonly repeating patterns of use of our app's commands in shell
 #
 
 ## Enable expaned shell globbing
@@ -84,7 +84,7 @@ complete -F  _ac_build  build
 # Add the on/off configurable modules to configure command
 #
 #_acvar_configure_list=`find ~/im/config/template/ -type l -name "*.conf" | xargs -L 1 basename | sed 's/.conf$//g' | xargs`
-_acvar_configure_list='ecn tradeware deskrouter rmds vov trace raccoon tortola brassact engardcdb client'
+_acvar_configure_list='ecn tradeware tradedesk rmds engard client'
 _ac_configure() 
 {
   local cur="${COMP_WORDS[COMP_CWORD]}"
@@ -106,24 +106,24 @@ complete -A  command  catwhich
 
 
 
-__acfun_altaconf_parts(){
+__acfun_appconf_parts(){
     cut -f 1 -d '=' $1 | grep -vP '^#' | cut -f 1-"$2" -d '_' | sort -u | grep "$3" | xargs
 }
-__acfun_altaconf_tr(){
+__acfun_appconf_tr(){
     echo $1 | tr [:lower:] [:upper:] | sed 's/\./\_/g'
 }
-_ac_altaconf()
+_ac_appconf()
 {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local conf=`echo ~/im/config/alta.conf`
+    local conf=`echo ~/im/config/app.conf`
     local parts=''
     
-    cur=` __acfun_altaconf_tr $cur `;
+    cur=` __acfun_appconf_tr $cur `;
     case "$cur" in 
 	'' )
-		parts=` __acfun_altaconf_parts ${conf} 1 `
+		parts=` __acfun_appconf_parts ${conf} 1 `
 		;;
 	* )
 		local num_parts=` echo "$cur" | ~/sdk/bin/pivot -r -d '_' | grep -vP '^$' | wc -l`;
@@ -131,19 +131,19 @@ _ac_altaconf()
 		## local more_parts=$(( num_parts + 1 )) ## perhaps we can show even more?
 		
 		## Attempt to grab more parts to give user greater visibility....
-		parts=`__acfun_altaconf_parts ${conf} ${num_parts} ${cur}`;
+		parts=`__acfun_appconf_parts ${conf} ${num_parts} ${cur}`;
 		N=`echo $parts | awk '{print NF}' `
 
 		# if [ "$N" -ge 100 ];then
 		# 	## but not if it's going to show more than 100 which would bloat and require prompts
-		# 	parts=` __acfun_altaconf_parts ${conf} ${num_parts} `
+		# 	parts=` __acfun_appconf_parts ${conf} ${num_parts} `
 		# fi
 
 		## if very few values returned ... show the whole thing 
 		if [ "$N" -le 10 ];then
 			# source ~/sdk/bin/colors
 			# cyan N = $N ... getting again ... 
-			parts=` __acfun_altaconf_parts $conf "" `
+			parts=` __acfun_appconf_parts $conf "" `
 		fi
 		;;
     esac 
@@ -152,16 +152,16 @@ _ac_altaconf()
     return 0
 }
 
-complete -F  _ac_altaconf altaconf
+complete -F  _ac_appconf appconf
 
 
 
 
 
-__acfun_altaconfset_parts(){
+__acfun_appconfset_parts(){
     cut -f 1 -d '=' $1 | grep -vP '^#' | cut -f 1-"$2" -d '.' | sort -u | cut -f 1-"$2" -d '_' | sort -u |grep "$3" | xargs
 }
-__acfun_altaconfset_dotOrUnderScore(){
+__acfun_appconfset_dotOrUnderScore(){
     hasDot=`echo "$1" | grep -v '\.' | wc -l`
     if [ "$hasDot" -eq 0 ];then
         echo '\.'
@@ -169,10 +169,10 @@ __acfun_altaconfset_dotOrUnderScore(){
         echo '\_'
     fi
 }
-__acfun_altaconfset_valueOf(){
+__acfun_appconfset_valueOf(){
     grep -i  ^$1=  $2  | cut -f 2 -d '=' | sed 's/"//g'
 }
-_ac_altaconfset()
+_ac_appconfset()
 {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -182,13 +182,13 @@ _ac_altaconfset()
     
     
     case "$prev" in 
-    altaconfset )
+    appconfset )
         case "$cur" in
         '' )
-            parts=` __acfun_altaconfset_parts ${conf} 1 `
+            parts=` __acfun_appconfset_parts ${conf} 1 `
             ;;
         * )
-            local delim=`__acfun_altaconfset_dotOrUnderScore "$cur"`
+            local delim=`__acfun_appconfset_dotOrUnderScore "$cur"`
             local num_parts=` echo "$cur" | ~/sdk/bin/pivot -r -d $delim | grep -vP '^$' | wc -l`;
             if [ ${num_parts} -eq 0 ];then
                 num_parts=$(( num_parts + 1 ))
@@ -197,12 +197,12 @@ _ac_altaconfset()
             local more_parts=$(( num_parts + 1 )) ## perhaps we can show even more?
             
             ## Attempt to grab more parts to give user greater visibility....
-            parts=`__acfun_altaconfset_parts ${conf} ${num_parts} ${cur}`;
+            parts=`__acfun_appconfset_parts ${conf} ${num_parts} ${cur}`;
             N=`echo $parts | awk '{print NF}' `
     
             ## if very few values returned ... show the whole thing 
             if [ "$N" -le 6 ];then
-                parts=` __acfun_altaconfset_parts $conf "99" $cur `
+                parts=` __acfun_appconfset_parts $conf "99" $cur `
             fi
             ;;
         esac 
@@ -210,9 +210,9 @@ _ac_altaconfset()
     * )
         local prev2="${COMP_WORDS[COMP_CWORD-2]}"
         case "$prev2" in 
-        altaconfset )
+        appconfset )
             ## For added awesomeness auto complete the 2nd arguemnt w/ existing value!
-            parts=`__acfun_altaconfset_valueOf  $prev $conf`
+            parts=`__acfun_appconfset_valueOf  $prev $conf`
             ;;
         * )
             parts=''
@@ -224,7 +224,7 @@ _ac_altaconfset()
     return 0
 }
 
-complete -F  _ac_altaconfset altaconfset
+complete -F  _ac_appconfset appconfset
 
 
 
@@ -255,7 +255,7 @@ _ac_run_service()
 {
     local step="start stop pid pids eod loglevel ping"
     local stepRe=`echo $step | sed 's/ /|/g' `
-    local srvs="corba ministry secmgr ecn manual vecna stockgem cbgem cbadmin viewmaster goliath david0 reporter pinger altaas"
+    local srvs="corba database ecn stock cbond admin views ui reporter pinger appas"
 
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -281,7 +281,7 @@ complete -F _ac_run_service  rs
 ## Autocompletion for known FIX reporter sequences values 
 _ac_set_sequence()
 {
-    local sequences="ENGARDCDB DESKROUTER TORTOLA VOV RACCOON BRASSACT TRADEWARE TRACE"
+    local sequences="ENGARDCDB TRADEDESK BRASSACT TRADEWARE"
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
     

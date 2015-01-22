@@ -18,22 +18,22 @@ usage() {
 
 
   Example 1 : 
-	$> (  cd tradeware/  && $name )
+	$> (  cd tradedesk/  && $name )
 
 
   Example 2 : 
-	$> $name -c tradeware -j tradeware_2013_01_01.jar  -d /tmp/
+	$> $name -c tradedesk -j tradedesk_2013_01_01.jar  -d /tmp/
 
 
 EOF
 }
 
 
-WACH_DIR="com/company_name/custom/wachovia"
-ROOT_DIR="${IM_SRC}/sdk/${WACH_DIR}"
+CLIENT_DIR="com/company_name/custom/client"
+ROOT_DIR="${IM_SRC}/sdk/${CLIENT_DIR}"
 COMP_DIR=''
 JAR_NAME=''
-DIR_OUT="${IM_SRC}/sdk"
+DIR_OUT="${APP_SRC}/sdk"
 
 while getopts "c:j:d:h" opt
 do

@@ -10,7 +10,7 @@ usage(){
 	`echo Sets or Gets outbound/inbound sequence values.`
 	Auto adjusts for Oracle or Sybase
 	
-	-s	X	Where X is the name of the sequence, eg: "TRADEWARE", "DESKROUTER","ENGARDCDB",etc..
+	-s	X	Where X is the name of the sequence, eg: "TRADEWARE", "TRADEDESK","ENGARDCDB",etc..
 			(Use tab-tab autocomplete for names of sequences)
 	
 	num		New value to set the sequence to (not needed with `echo -g` option).

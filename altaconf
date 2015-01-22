@@ -4,4 +4,4 @@ if [ "$#" -eq 0 ];then
 	exit 0;
 fi
 
-grep -iP "$1"  ${IM_SRC}/im/config/alta.conf --color=always
+grep -iP "$1"  ${APP_SRC}/app/config/conf.conf --color=always

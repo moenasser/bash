@@ -4,11 +4,11 @@ tmp=`mktemp -p ${HOME} .tmp.homeRe.XXX`
 echo "${HOME}" | sed 's/\//\\\//g' > $tmp 
 homeRe=`cat $tmp  &&  rm $tmp`
 
-find ${HOME}/sdk/lib/ ${HOME}/im/lib ${HOME}/reuters6.4/ ${HOME}/im/server/lib/com/imarkets/alta/main/newalta.jar  -name "*.jar" -type f | ### All jars under sdk/, im/ & reuters/	\
+find ${HOME}/sdk/lib/ ${HOME}/app/lib ${HOME}/reuters6.4/ ${HOME}/app/server/lib/app/main/newapp.jar  -name "*.jar" -type f | ### All jars under sdk/, app/ & reuters/	\
   grep -viP "tomcat|svn"			|  ### Avoid tomcat and svn paths		\
-  grep -iP "regexp|jconn2|mail|alta.jar|commons-cli|eqderiv|jms|rfa.jar|jsfcrt|connector|sql_server|ojdbc|mq.jar" | ## Includes	\
+  grep -iP "regexp|jconn2|mail|app.jar|commons-cli|eqderiv|jms|rfa.jar|jsfcrt|connector|sql_server|ojdbc|mq.jar" | ## Includes	\
   grep -viP "mqm.*/jms|mqjms|endorsed"		|  ### Excludes  				\
-  grep -viP "\/alta.jar"                    |  ### Remove the OLD ALTA jar  \
+  grep -viP "\/app.jar"                    |  ### Remove the OLD app jar  \
   sort | xargs | sed 's/ /:/g'			|  ### Join on ":" separator			\
   #####  sed "s/$homeRe/\$\{HOME\}/g"		|  ### Put back "${HOME}" literal string  	\
   sed "s/^/$homeRe\/sdk:/g"         ## Finally, slap ${HOME}/sdk in front of it all

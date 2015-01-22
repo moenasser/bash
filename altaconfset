@@ -3,7 +3,7 @@
 source colors
 source safe
 
-local=`echo ${IM_SRC}/im/config/LOCALCONFIG`
+local=`echo ${APP_SRC}/app/config/LOCALCONFIG`
 
 key=
 val=
@@ -18,7 +18,7 @@ case "$#" in
         exit 0
         ;;
     * )
-        echo 'Error : Need 2 inputs - Alta configuration and its value' 
+        echo 'Error : Need 2 inputs - App configuration and its value' 
         exit 1 
         ;;
 esac
