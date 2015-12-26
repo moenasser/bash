@@ -1,0 +1,18 @@
+[alias]
+        co = checkout
+        br = branch
+        st = status
+        ch = cherry-pick
+        logp = log -25 --pretty='format:%C(yellow)%H%C(reset) %>(12,trunc)%ad %C(green)%<(16,trunc)%an%Creset %s' --date=relative
+        logf = log -25 --format="" --name-only
+[core]
+        autocrlf = true
+        fileMode = false
+        editor = nano
+[user]
+        name = Mohamed Nasser
+
+[credential]
+        helper = winstore
+[push]
+        default = simple
