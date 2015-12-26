@@ -1,0 +1,22 @@
+syntax on
+
+"Information on the following setting can be found with
+":help set
+set tabstop=4
+set expandtab
+set autoindent
+set shiftwidth=4  "this is the level of autoindent, adjust to taste
+set ruler
+set rulerformat=%-14.(%l,%c%V%)\ %P
+set mouse=a       "mouse highlighting
+set number        "line numbers
+set backspace=indent,eol,start
+set visualbell
+set hlsearch      "searchs are highlighted
+" Uncomment below to make screen not flash on error
+" set vb t_vb=""
+
+colors desert
+set ignorecase "case insensitive. Append '\C' to your search term to turn ON case sensitive
+hi Search cterm=NONE ctermfg=white ctermbg=red
+
